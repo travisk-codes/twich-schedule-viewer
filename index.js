@@ -8,6 +8,8 @@ const { client_id, client_secret } = process.env
 
 const app = express()
 const port = 7792
+const videoFetchCount = 100
+const maxVideos = 1000
 
 let accessToken
 
@@ -15,7 +17,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // <a href='https://streamlikelihood.homaro.co/user?name=homaro_co'>Search</a>
 app.get('/user', (req, res) => {
-	console.log('/user hit')
 	const username = req.query.name
 	const userIdRequest = {
 		url: `https://api.twitch.tv/helix/users?login=${username}`,
@@ -24,33 +25,61 @@ app.get('/user', (req, res) => {
 			'Client-Id': client_id,
 		},
 	}
-	request.get(userIdRequest, (err, _, body) => {
+	request.get(userIdRequest, async (err, _, body) => {
 		user_id = JSON.parse(body).data[0].id
-		console.log('User id obtained!')
-		const videosRequest = {
-			url: `https://api.twitch.tv/helix/videos?user_id=${user_id}`,
-			form: {
-				start_time: '2024-05-06T00:00:00Z',
-				type: 'archive',
-			},
-			headers: {
-				'Authorization': `Bearer ${accessToken}`,
-				'Client-Id': client_id,
-			},
-		}
-		request.get(videosRequest, (err, _, body) => {
-			const videos = JSON.parse(body).data
-			const timeBlocks = videos.map(video => getTimeBlockFrom(video))
-			res.json(timeBlocks)
-		})
+		let allVideos = []
+		let currentVideos = []
+		let cursor = ''
+		do {
+			currentVideos = await	fetchMoreVideos(cursor)
+			allVideos = allVideos.concat(currentVideos.data)
+			cursor = currentVideos.pagination.cursor
+		} while (
+			currentVideos.data.length === videoFetchCount
+			&& allVideos.length <= maxVideos
+		)
+		console.log('Videos for', username, ':', allVideos.length)
+		const timeBlocks = allVideos.map(video => getTimeBlockFrom(video))
+		res.json(timeBlocks)
+		// const videosRequest = {
+		// 	url: `https://api.twitch.tv/helix/videos?user_id=${user_id}&first=100`,
+		// 	form: {
+		// 		type: 'archive',
+		// 	},
+		// 	headers: {
+		// 		'Authorization': `Bearer ${accessToken}`,
+		// 		'Client-Id': client_id,
+		// 	},
+		// }
+		// request.get(videosRequest, (err, _, body) => {
+		// 	const videos = JSON.parse(body).data
+		// 	// console.log('fetched', videos.length, 'videos')
+		// 	const timeBlocks = videos.map(video => getTimeBlockFrom(video))
+		// 	res.json(timeBlocks)
+		// })
 	})
 })
+
+async function fetchMoreVideos(cursor) {
+	const query = new URLSearchParams({
+		user_id,
+		first: videoFetchCount,
+		type: 'archive',
+		after: cursor,
+	})
+	const res = await fetch(`https://api.twitch.tv/helix/videos?${query}`, {
+		headers: {
+			'Authorization': `Bearer ${accessToken}`,
+			'Client-Id': client_id,
+		},
+	})
+	return res.json()
+}
 
 function getTimeBlockFrom(video) {
 	const time = moment(video.created_at)
 	const momentCompatibleDuration = convertToMomentDuration(video.duration)
 	const duration = moment.duration(momentCompatibleDuration)
-	console.log(time.toString(), momentCompatibleDuration)
 	const day = time.format('dddd')
 	const start = time.format('HHmm')
 	const stop = time.add(duration).format('HHmm')

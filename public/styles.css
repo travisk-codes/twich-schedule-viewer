@@ -1,35 +1,73 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    text-align: center;
+html,
+body {
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	font-family: 'Nunito', sans-serif;
+	background: #0e0e10;
+	color: white;
 }
 
+h1 {
+	font-size: 3em;
+	margin-top: 1em;
+	margin-bottom: 0;
+}
+
+h2 {}
+
 input#username {
-    margin-bottom: 2em;
+	margin-bottom: 2rem;
+}
+
+#time-label {
+	display: flex;
+	justify-content: space-between;
+	position: absolute;
+	left: 2rem;
+	right: 2rem;
+	top: 15rem;
 }
 
 #schedule {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    left: 64px;
-    right: 64px;
-    bottom: 64px;
-    top: 192px;
-    background-color: lightgrey;
-    margin: 0 auto;
-    border-bottom: 1px dotted grey;
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	left: 1rem;
+	bottom: 1rem;
+	right: 1rem;
+	top: 16rem;
+	margin: 0 auto;
+	border-radius: 5px;
+	border: 1px solid hsla(0, 0%, 100%, 0.25);
+	overflow: hidden;
+	margin: 1rem;
 }
 
 .day {
-    display: flex;
-    position: relative;
-    border: 1px dotted grey;
-    border-bottom: none;
-    flex-grow: 1;
+	background-color: white;
+	display: flex;
+	position: relative;
+	flex-grow: 1;
+	border-bottom: 1px solid hsla(0, 0%, 100%, 0.1);
+}
+
+#schedule:last-child {
+	border-bottom: none;
+}
+
+.day-label {
+	padding-left: 5px;
+	padding-top: 5px;
+	color: #0e0e10;
+}
+
+.day:hover {
+	background-color: hsla(0, 0%, 100%, 0.9);
 }
 
 .time-block {
-    height: 100%;
-    background-color: #ff000044;
+	height: 100%;
+	background-color: hsla(0, 100%, 50%, 0.1);
+	position: absolute;
 }

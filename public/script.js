@@ -10,24 +10,46 @@ function ready(fn) {
 }
 
 ready(() => {
-	const sundayRow = document.querySelector('#sunday')
-	sundayRow.appendChild(html(`<div id='time-block-1' class='time-block'></div>`))
-	const timeBlock = document.querySelector('#time-block-1')
-	timeBlock.style.width = '40px'
-	timeBlock.style.position = 'absolute'
-	timeBlock.style.left = '200px'
-	sundayRow.appendChild(html(`<div id='time-block-2' class='time-block'></div>`))
-	const timeBlock2 = document.querySelector('#time-block-2')
-	timeBlock2.style.width = '80px'
-	timeBlock2.style.position = 'absolute'
-	timeBlock2.style.left = '220px'
 	addEventListener(document.querySelector('#search'), 'click', async e => {
+		for (const el of document.querySelectorAll('.time-block')) {
+			el.remove()
+		}
 		const username = document.querySelector('input#username').value
 		const res = await fetch(`/user?name=${username}`)
 		const json = await res.json()
-		console.log(json)
+		json.forEach(timeBlock => renderTimeBlock(timeBlock))
+		document.querySelector('#opacity').value = '10'
+	})
+	addEventListener(document.querySelector('#opacity'), 'change', e => {
+		const timeBlocks = document.querySelectorAll('.time-block')
+		timeBlocks.forEach(block => {
+			const alpha = e.target.value / 100
+			block.style.backgroundColor = `hsla(0, 100%, 50%, ${alpha})`
+		})
+	})
+	addEventListener(document.querySelector('input#username'), 'keydown', e => {
+		if (e.key === 'Enter' || e.keyCode === 13) document.querySelector('#search').click()
 	})
 })
+
+function renderTimeBlock(timeBlock) {
+	const { day, start, stop } = timeBlock
+	const id = `${day}-${start}-${stop}`
+	const dayRow = document.querySelector(`#${day.toLowerCase()}`)
+	dayRow.appendChild(html(`<div class='time-block' id='${id}'></div>`))
+	const timeBlockEl = document.querySelector(`#${id}`)
+	const startPos = getPositionFromTime(start)
+	const stopPos = getPositionFromTime(stop)
+	timeBlockEl.style.left = startPos + '%'
+	timeBlockEl.style.right = 100 - stopPos + '%'
+}
+
+function getPositionFromTime(time) {
+	const hours = time.slice(0, 2)
+	const minutes = time.slice(-2)
+	const totalMinutes = Number(minutes) + Number(hours) * 60
+	return (totalMinutes / (24 * 60)) * 100
+}
 
 function addEventListener(el, eventName, eventHandler, selector) {
 	if (selector) {
