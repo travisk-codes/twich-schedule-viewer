@@ -1,0 +1,35 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+input#username {
+    margin-bottom: 2em;
+}
+
+#schedule {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 64px;
+    right: 64px;
+    bottom: 64px;
+    top: 192px;
+    background-color: lightgrey;
+    margin: 0 auto;
+    border-bottom: 1px dotted grey;
+}
+
+.day {
+    display: flex;
+    position: relative;
+    border: 1px dotted grey;
+    border-bottom: none;
+    flex-grow: 1;
+}
+
+.time-block {
+    height: 100%;
+    background-color: #ff000044;
+}
