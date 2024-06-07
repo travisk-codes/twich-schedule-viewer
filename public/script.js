@@ -21,5 +21,30 @@ ready(() => {
 	timeBlock2.style.width = '80px'
 	timeBlock2.style.position = 'absolute'
 	timeBlock2.style.left = '220px'
-
+	addEventListener(document.querySelector('#search'), 'click', async e => {
+		const username = document.querySelector('input#username').value
+		const res = await fetch(`/user?name=${username}`)
+		const json = await res.json()
+		console.log(json)
+	})
 })
+
+function addEventListener(el, eventName, eventHandler, selector) {
+	if (selector) {
+		const wrappedHandler = (e) => {
+			if (!e.target) return;
+			const el = e.target.closest(selector);
+			if (el) {
+				eventHandler.call(el, e);
+			}
+		};
+		el.addEventListener(eventName, wrappedHandler);
+		return wrappedHandler;
+	} else {
+		const wrappedHandler = (e) => {
+			eventHandler.call(el, e);
+		};
+		el.addEventListener(eventName, wrappedHandler);
+		return wrappedHandler;
+	}
+}
