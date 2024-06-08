@@ -61,18 +61,18 @@ app.get('/user', (req, res) => {
 })
 
 async function fetchMoreVideos(cursor) {
+	const url = 'https://api.twitch.tv/helix/videos?'
+	const headers = {
+		'Authorization': `Bearer ${accessToken}`,
+		'Client-Id': client_id,
+	}
 	const query = new URLSearchParams({
 		user_id,
 		first: videoFetchCount,
 		type: 'archive',
 		after: cursor,
 	})
-	const res = await fetch(`https://api.twitch.tv/helix/videos?${query}`, {
-		headers: {
-			'Authorization': `Bearer ${accessToken}`,
-			'Client-Id': client_id,
-		},
-	})
+	const res = await fetch(`${url}${query}`, { headers })
 	return res.json()
 }
 
@@ -91,10 +91,53 @@ function getTimeBlockFrom(video) {
 }
 
 // 4h48m3s -> 4:48:03
-const convertToMomentDuration = duration => duration
-	.replace('h', ':')
-	.replace('m', ':')
-	.replace('s', '')
+// 4m -> 00:04:00
+// 10h3s -> 10:00:03
+function isCharNumber(c) {
+  return c >= '0' && c <= '9';
+}
+const convertToMomentDuration = duration => {
+	d = duration.split('')
+
+	let hours = '00'
+	let minutes = '00'
+	let seconds = '00'
+
+	let h = d.indexOf('h') !== -1 ? d.indexOf('h') : 0
+	let m = d.indexOf('m') !== -1 ? d.indexOf('m') : 0
+	let s = d.indexOf('s') !== -1 ? d.indexOf('s') : 0
+
+	if (s) {
+		let ones = d[s - 1]
+		let tens = d[s - 2]
+		if (isCharNumber(tens)) {
+			seconds = `${tens}${ones}`
+		} else {
+			seconds = `0${ones}`
+		}
+	}
+
+	if (m) {
+		let ones = d[m - 1]
+		let tens = d[m - 2]
+		if (isCharNumber(tens)) {
+			minutes = `${tens}${ones}`
+		} else {
+			minutes = `0${ones}`
+		}
+	}	
+
+	if (h) {
+		let ones = d[h - 1]
+		let tens = d[h - 2]
+		if (isCharNumber(tens)) {
+			hours = `${tens}${ones}`
+		} else {
+			hours = `0${ones}`
+		}
+	}
+	return `${hours}:${minutes}:${seconds}`
+}
 
 // Get an access token so we can use the Twitch API
 const accessTokenRequest = {

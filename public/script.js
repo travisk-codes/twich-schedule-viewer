@@ -45,9 +45,10 @@ function renderTimeBlock(timeBlock) {
 }
 
 function getPositionFromTime(time) {
+	const offset = new Date().getTimezoneOffset()
 	const hours = time.slice(0, 2)
 	const minutes = time.slice(-2)
-	const totalMinutes = Number(minutes) + Number(hours) * 60
+	const totalMinutes = Number(minutes) + Number(hours) * 60 - offset
 	return (totalMinutes / (24 * 60)) * 100
 }
 
